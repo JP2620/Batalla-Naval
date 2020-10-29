@@ -40,5 +40,6 @@ jobs:
 
       # run tests!
       - run: 
-        - gradle check
-        - gradle test
+          check: gradle check
+          test: gradle test
+
