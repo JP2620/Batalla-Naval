@@ -13,7 +13,10 @@ plugins {
     id 'eclipse'
     // Para que compile todo 
     id 'java-library'
+    
+    id 'jacoco'
 
+    id "org.sonarqube" version "2.7"
     // Apply the application plugin to add support for building a CLI application.
     id 'application'
 }
@@ -25,11 +28,20 @@ java {
 
 version = '1.2.1'
 
+jacoco {
+    toolVersion = "0.8.5"
+    reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
+apply plugin: 'jacoco'
+
+
 repositories {
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
 }
+
 
 dependencies {
     // This dependency is used by the application.
@@ -54,7 +66,38 @@ test {
        testLogging{
        events "passed", "skipped", "failed"
     }
+    jacoco {
+       destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+       classDumpDir = file("$buildDir/jacoco/classpathdumps")
+    }
 }
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.5
+            }
+        }
+
+        rule {
+            enabled = false
+            element = 'CLASS'
+            includes = ['org.gradle.*']
+
+            limit {
+                counter = 'LINE'
+                value = 'TOTALCOUNT'
+                maximum = 0.3
+            }
+        }
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification
+
 jar{
      manifest{
          attributes 'Main-Class': 'model.Main'
